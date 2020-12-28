@@ -1,17 +1,3 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-"""An example of multi-worker training with Keras model using Strategy API."""
-
 from __future__ import absolute_import, division, print_function
 
 import argparse
@@ -97,8 +83,7 @@ def main(args):
     # MultiWorkerMirroredStrategy creates copies of all variables in the model's
     # layers on each device across all workers
     # if your GPUs don't support NCCL, replace "communication" with another
-    strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy(
-        communication=tf.distribute.experimental.CollectiveCommunication.AUTO)
+    strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy(communication=tf.distribute.experimental.CollectiveCommunication.AUTO)
 
     BATCH_SIZE_PER_REPLICA = 64
     BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
@@ -124,7 +109,7 @@ def main(args):
     # Callback for printing the LR at the end of each epoch.
     class PrintLR(tf.keras.callbacks.Callback):
         def on_epoch_end(self, epoch, logs=None): #pylint: disable=no-self-use
-            print('\nLearning rate for epoch {} is {}'.format(epoch + 1, 
+            print('\nLearning rate for epoch {} is {}'.format(epoch + 1,
                                                               multi_worker_model.optimizer.lr.numpy()))
 
     callbacks = [
@@ -163,24 +148,15 @@ def main(args):
 if __name__ == '__main__':
     os.environ['NCCL_DEBUG'] = 'INFO'
 
-    # 单节点测试的时候注释该部分代码
-    # os.environ['TF_CONFIG'] = json.dumps({
-    #     'cluster': {
-    #         'worker': ["localhost:2222", "localhost:2223"]
-    #     },
-    #     'task': {'type': 'worker', 'index': 0}
-    # })
-    # os.getenv('TF_CONFIG')
-
     # to decide if a worker is chief, get TASK_INDEX in Cluster info
     tf_config = json.loads(os.environ.get('TF_CONFIG') or '{}')
     TASK_INDEX = tf_config['task']['index']
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data-dir', 
-                        type=str, 
+    parser.add_argument('--data-dir',
+                        type=str,
                         default='jiaqianjing/datasets/fashion/',
-                        required=False, 
+                        required=False,
                         help="Directory of training dataset where stored")
 
     parser.add_argument('--saved_model_dir',
@@ -197,3 +173,4 @@ if __name__ == '__main__':
 
     parsed_args = parser.parse_args()
     main(parsed_args)
+
